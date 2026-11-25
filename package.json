@@ -1,0 +1,9 @@
+{
+  "name": "invflow",
+  "private": true,
+  "description": "InvFlow: gestão das atividades do time de inventário",
+  "type": "module",
+  "scripts": {
+    "test": "node --test"
+  }
+}

@@ -1,5 +1,5 @@
 // Ponto de entrada do InvFlow: login, perfil e navegação.
-// Próximas etapas: tempo real (etapa 6).
+// Próximas etapas: equipe e detalhe (etapa 5), tempo real (etapa 6).
 
 import { iniciarRoteador } from './roteador.js';
 import { telaEmBreve, telaNaoEncontrada } from './interface/telas/em-breve.js';
@@ -7,6 +7,8 @@ import { telaLogin } from './interface/telas/login.js';
 import { telaNovaSenha } from './interface/telas/nova-senha.js';
 import { telaPerfil } from './interface/telas/perfil.js';
 import { telaCadastros } from './interface/telas/cadastros.js';
+import { telaMinhas } from './interface/telas/minhas.js';
+import { abrirNovaTarefa } from './interface/telas/nova-tarefa.js';
 import { telaAvisoConta, telaSemAcesso } from './interface/telas/aviso-conta.js';
 import { mostrarAviso } from './interface/componentes/aviso-toast.js';
 import { sessaoAtual, aoMudarSessao, meuPerfil, minhaSituacao, chegouPeloLinkDeNovaSenha } from './dados/sessao.js';
@@ -14,7 +16,7 @@ import { estadoDoApp, podeAbrir, rotasVisiveis } from './logica/acesso.js';
 import { iniciais } from './logica/conta.js';
 
 const ROTAS = [
-  { nome: 'minhas', titulo: 'Minhas tarefas', tela: telaEmBreve({ titulo: 'Minhas tarefas', descricao: 'O que está com você agora, hoje e nos próximos dias.', etapa: 4 }) },
+  { nome: 'minhas', titulo: 'Minhas tarefas', tela: (alvo) => telaMinhas(alvo, contexto) },
   { nome: 'equipe', titulo: 'Equipe', tela: telaEmBreve({ titulo: 'Equipe', descricao: 'Todas as tarefas abertas do time, com filtros.', etapa: 5 }) },
   { nome: 'painel', titulo: 'Painel', tela: telaEmBreve({ titulo: 'Painel do gestor', descricao: 'O que pede atenção hoje e como o time está andando.', etapa: 10 }) },
   { nome: 'emb', titulo: 'EMB-23', tela: telaEmBreve({ titulo: 'EMB-23', descricao: 'Lista, criação, impressão e baixa dos EMBs.', etapa: 13 }) },
@@ -143,7 +145,7 @@ function mudarEstado(estado) {
 }
 
 document.getElementById('botao-nova').addEventListener('click', () => {
-  mostrarAviso('A criação de tarefas chega na etapa 4.');
+  if (estadoAtual === 'app' && contexto.perfil && !document.querySelector('dialog[open]')) abrirNovaTarefa({ perfil: contexto.perfil });
 });
 
 async function iniciar() {

@@ -48,3 +48,9 @@ test('erros dos catálogos', () => {
   assert.equal(traduzirErro({ code: '23505', message: 'duplicate key value violates unique constraint "clientes_nome_busca_key"' }), 'Já existe um cadastro com esse nome.');
   assert.equal(traduzirErro({ code: '23514', message: 'Digite um nome com letras ou números.' }), 'Digite um nome com letras ou números.');
 });
+
+test('erros das funções de tarefas passam como vieram (já em português)', () => {
+  assert.equal(traduzirErro({ code: 'P0001', message: 'Para bloquear, diga o motivo.' }), 'Para bloquear, diga o motivo.');
+  assert.equal(traduzirErro({ code: '42501', message: 'Só quem criou a tarefa ou o gestor pode cancelar.' }), 'Só quem criou a tarefa ou o gestor pode cancelar.');
+  assert.match(traduzirErro({ code: '42501', message: 'permission denied for function criar_tarefa' }), /permissão/);
+});

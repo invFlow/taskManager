@@ -6,11 +6,11 @@ Site estático (HTML, CSS e JavaScript em módulos ES, **sem etapa de build**) p
 
 ## Estado atual
 
-Etapa 3 de 19: catálogos (tipos de atividade e clientes) e o campo "busca com criar". Antes: login, pessoas e regras de acesso (etapa 2).
+Etapa 4 de 19: tarefas (criar, Iniciei, Concluí, bloquear, editar, cancelar) e a tela Minhas tarefas. Antes: catálogos com "busca com criar" (etapa 3) e login, pessoas e regras de acesso (etapa 2).
 
 | Endereço | Tela | Situação |
 |---|---|---|
-| `#/minhas` | Minhas tarefas (inicial) | chega na etapa 4 |
+| `#/minhas` | Minhas tarefas (inicial) | pronta: Agora, Hoje, Próximos dias; botão **+ Nova** cria tarefa |
 | `#/equipe` | Equipe | chega na etapa 5 |
 | `#/painel` | Painel do gestor (só gestor) | chega na etapa 10 |
 | `#/emb` | EMB-23 | chega na etapa 13 |
@@ -39,7 +39,7 @@ node --test
 
 Os testes ficam em `tests/` e cobrem só código puro (sem tela e sem banco).
 
-As regras do banco têm testes em `supabase/tests/rls.sql` (pessoas) e `supabase/tests/catalogos.sql` (tipos e clientes). Para rodar num Postgres local vazio:
+As regras do banco têm testes em `supabase/tests/rls.sql` (pessoas), `supabase/tests/catalogos.sql` (tipos e clientes) e `supabase/tests/tarefas.sql` (tarefas). Para rodar num Postgres local vazio:
 
 ```
 DATABASE_URL=postgres://usuario:senha@localhost:5432/banco_de_teste supabase/tests/rodar-local.sh

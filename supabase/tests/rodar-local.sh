@@ -11,7 +11,7 @@ for arquivo in migrations/*.sql; do
   psql_ -f "$arquivo"
   psql_ -f "$arquivo"   # segunda vez: a migração precisa poder rodar de novo
 done
-for teste in tests/rls.sql tests/catalogos.sql; do
+for teste in tests/rls.sql tests/catalogos.sql tests/tarefas.sql; do
   echo "Rodando $teste"
   psql_ -f "$teste"
 done

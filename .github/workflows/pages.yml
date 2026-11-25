@@ -24,9 +24,27 @@ jobs:
       - name: Testes (node --test)
         run: node --test
 
+  testes-sql:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: teste
+          POSTGRES_DB: invflow_teste
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Migrações e testes de acesso (supabase/tests/rls.sql)
+        env:
+          DATABASE_URL: postgres://postgres:teste@localhost:5432/invflow_teste
+        run: supabase/tests/rodar-local.sh
+
   publicar:
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
-    needs: testes
+    needs: [testes, testes-sql]
     runs-on: ubuntu-latest
     permissions:
       pages: write

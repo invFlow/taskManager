@@ -6,7 +6,7 @@ Site estático (HTML, CSS e JavaScript em módulos ES, **sem etapa de build**) p
 
 ## Estado atual
 
-Etapa 2 de 19: login, pessoas e regras de acesso. Quem não entrou vê a tela de login; no primeiro acesso a pessoa cria a própria senha.
+Etapa 3 de 19: catálogos (tipos de atividade e clientes) e o campo "busca com criar". Antes: login, pessoas e regras de acesso (etapa 2).
 
 | Endereço | Tela | Situação |
 |---|---|---|
@@ -14,7 +14,7 @@ Etapa 2 de 19: login, pessoas e regras de acesso. Quem não entrou vê a tela de
 | `#/equipe` | Equipe | chega na etapa 5 |
 | `#/painel` | Painel do gestor (só gestor) | chega na etapa 10 |
 | `#/emb` | EMB-23 | chega na etapa 13 |
-| `#/cadastros` | Cadastros (só gestor) | aba Pessoas pronta; Tipos e Clientes na etapa 3 |
+| `#/cadastros` | Cadastros (só gestor) | abas Pessoas, Tipos (`#/cadastros/tipos`) e Clientes (`#/cadastros/clientes`) prontas |
 | `#/perfil` | Perfil | pronto: nome, e-mails, senha, sair |
 
 Configuração do Supabase (cadastro fechado, endereço do site, migrações, primeiro gestor): veja `docs/implantacao.md`.
@@ -39,13 +39,13 @@ node --test
 
 Os testes ficam em `tests/` e cobrem só código puro (sem tela e sem banco).
 
-As regras do banco têm testes em `supabase/tests/rls.sql`. Para rodar num Postgres local vazio:
+As regras do banco têm testes em `supabase/tests/rls.sql` (pessoas) e `supabase/tests/catalogos.sql` (tipos e clientes). Para rodar num Postgres local vazio:
 
 ```
 DATABASE_URL=postgres://usuario:senha@localhost:5432/banco_de_teste supabase/tests/rodar-local.sh
 ```
 
-Ou cole `supabase/tests/rls.sql` no SQL Editor do Supabase (não deixa nada gravado).
+Ou cole cada arquivo de teste no SQL Editor do Supabase (não deixam nada gravado).
 
 ## Publicação
 

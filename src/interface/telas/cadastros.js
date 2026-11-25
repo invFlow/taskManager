@@ -1,20 +1,38 @@
-// Cadastros do gestor. Nesta etapa só a aba Pessoas; Tipos e Clientes chegam na etapa 3.
+// Cadastros do gestor: abas Pessoas, Tipos e Clientes (#/cadastros/tipos ...).
 import { el } from '../componentes/el.js';
 import { mostrarAviso } from '../componentes/aviso-toast.js';
 import { listarPessoas, atualizarPessoa } from '../../dados/pessoas.js';
 import { traduzirErro, iniciais } from '../../logica/conta.js';
+import { abaCatalogo } from './cadastros-catalogo.js';
 
-/** contexto: { perfil, aoAtualizarPerfil } */
-export function telaCadastros(alvo, contexto) {
-  const lista = el('div', { class: 'lista-pessoas', 'aria-live': 'polite' }, el('p', { class: 'texto-suave' }, 'Carregando pessoas...'));
+const ABAS = [
+  { nome: 'pessoas', titulo: 'Pessoas' },
+  { nome: 'tipos', titulo: 'Tipos' },
+  { nome: 'clientes', titulo: 'Clientes' },
+];
+
+/** contexto: { perfil, aoAtualizarPerfil }; parametros: ['tipos'] etc. */
+export function telaCadastros(alvo, contexto, parametros = []) {
+  const aba = ABAS.find((a) => a.nome === parametros[0]) ?? ABAS[0];
+  const corpo = el('div');
 
   alvo.replaceChildren(
     el('h1', {}, 'Cadastros'),
-    el('p', { class: 'texto-suave' }, 'Pessoas do time. Tipos, clientes, grupos de e-mail e horários chegam nas próximas etapas.'),
+    el('p', { class: 'texto-suave' }, 'Pessoas do time, tipos de atividade e clientes. Grupos de e-mail e horários chegam nas próximas etapas.'),
     el('nav', { class: 'abas', 'aria-label': 'Cadastros' },
-      el('span', { class: 'aba', 'aria-current': 'page' }, 'Pessoas'),
-      el('span', { class: 'aba desligada', title: 'Etapa 3' }, 'Tipos e clientes'),
+      ...ABAS.map((a) => el('a', { class: 'aba', href: `#/cadastros/${a.nome}`, 'aria-current': a === aba ? 'page' : null }, a.titulo)),
     ),
+    corpo,
+  );
+
+  if (aba.nome === 'pessoas') abaPessoas(corpo, contexto);
+  else abaCatalogo(corpo, aba.nome);
+}
+
+function abaPessoas(alvo, contexto) {
+  const lista = el('div', { class: 'lista-pessoas', 'aria-live': 'polite' }, el('p', { class: 'texto-suave' }, 'Carregando pessoas...'));
+
+  alvo.replaceChildren(
     el('section', { class: 'cartao' },
       el('div', { class: 'cabecalho-secao' }, el('h2', {}, 'Pessoas'), el('details', { class: 'como-adicionar' },
         el('summary', {}, 'Como adicionar alguém'),

@@ -43,3 +43,8 @@ test('erros do Supabase viram português', () => {
   assert.match(traduzirErro({ message: 'qualquer coisa' }), /Algo deu errado/);
   assert.equal(traduzirErro(null), '');
 });
+
+test('erros dos catálogos', () => {
+  assert.equal(traduzirErro({ code: '23505', message: 'duplicate key value violates unique constraint "clientes_nome_busca_key"' }), 'Já existe um cadastro com esse nome.');
+  assert.equal(traduzirErro({ code: '23514', message: 'Digite um nome com letras ou números.' }), 'Digite um nome com letras ou números.');
+});

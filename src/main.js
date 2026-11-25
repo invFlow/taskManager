@@ -18,7 +18,7 @@ const ROTAS = [
   { nome: 'equipe', titulo: 'Equipe', tela: telaEmBreve({ titulo: 'Equipe', descricao: 'Todas as tarefas abertas do time, com filtros.', etapa: 5 }) },
   { nome: 'painel', titulo: 'Painel', tela: telaEmBreve({ titulo: 'Painel do gestor', descricao: 'O que pede atenção hoje e como o time está andando.', etapa: 10 }) },
   { nome: 'emb', titulo: 'EMB-23', tela: telaEmBreve({ titulo: 'EMB-23', descricao: 'Lista, criação, impressão e baixa dos EMBs.', etapa: 13 }) },
-  { nome: 'cadastros', titulo: 'Cadastros', tela: (alvo) => telaCadastros(alvo, contexto) },
+  { nome: 'cadastros', titulo: 'Cadastros', tela: (alvo, parametros) => telaCadastros(alvo, contexto, parametros) },
   { nome: 'perfil', titulo: 'Perfil', tela: (alvo) => telaPerfil(alvo, contexto) },
 ];
 
@@ -67,7 +67,7 @@ function marcarAtivo(nome) {
   }
 }
 
-function mostrarRota({ rota }) {
+function mostrarRota({ rota, parametros }) {
   if (estadoAtual !== 'app') return;
   if (!rota) {
     telaNaoEncontrada(conteudo);
@@ -78,7 +78,7 @@ function mostrarRota({ rota }) {
     document.title = 'Sem acesso · InvFlow';
     marcarAtivo(null);
   } else {
-    rota.tela(conteudo);
+    rota.tela(conteudo, parametros);
     document.title = `${rota.titulo} · InvFlow`;
     marcarAtivo(rota.nome);
   }

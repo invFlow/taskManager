@@ -54,6 +54,8 @@ export function traduzirErro(erro) {
   if (msg.includes('só o gestor')) return 'Só o gestor pode fazer essa mudança.';
   if (codigo === '23505' || msg.includes('duplicate key')) return 'Já existe um cadastro com esse nome.';
   if (msg.includes('digite um nome com letras')) return 'Digite um nome com letras ou números.';
+  // Mensagens das funções do InvFlow (tarefas): já vêm em português.
+  if (erro.message && (codigo === 'P0001' || (codigo === '42501' && /[ãçéêíóõú]/i.test(erro.message)))) return String(erro.message);
   if (codigo === '42501' || msg.includes('permission denied') || msg.includes('row-level security'))
     return 'Você não tem permissão para fazer isso.';
   return 'Algo deu errado. Tente de novo em instantes.';

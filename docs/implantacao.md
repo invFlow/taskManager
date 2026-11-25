@@ -95,3 +95,27 @@ Como o de pessoas, este teste desfaz tudo no fim.
 ### 3. Usar
 
 No InvFlow, **Cadastros** > **Tipos** ou **Clientes**. Digite no campo "Procurar ou criar": se o nome já existe ele aparece na lista (sem diferenciar acento nem maiúscula); se não existe, a última opção é **Criar "nome"**. Na lista, **Renomear** corrige um nome e **Arquivar** tira o item das listas sem apagar.
+
+## Etapa 4: tarefas
+
+Leva 2 minutos. Precisa das etapas 2 e 3 feitas.
+
+### 1. Criar as tabelas (migração)
+
+1. Supabase > **SQL Editor** > **New query**.
+2. Abra o arquivo `supabase/migrations/003_tarefas.sql` do repositório, copie tudo e cole.
+3. Clique **Run**. Deve aparecer "Success. No rows returned".
+
+Isso cria as tarefas, os responsáveis, o histórico e as regras de status. Pode rodar de novo sem estragar nada.
+
+### 2. Conferir as regras (opcional, recomendado)
+
+1. Supabase > **SQL Editor** > **New query**.
+2. Cole o conteúdo de `supabase/tests/tarefas.sql` e clique **Run**.
+3. Deve aparecer `OK: todos os testes de tarefas passaram`. Se aparecer um erro que começa com `FALHOU:`, me mande o texto.
+
+O teste desfaz tudo no fim: nenhuma tarefa de teste fica no banco.
+
+### 3. Usar
+
+No InvFlow, **+ Nova**: escolha Tipo e Cliente (digitando; se não existir, a última opção cria) e clique **Criar**. O prazo já vem hoje 17h30 e o responsável é você. Em **Minhas tarefas**, **Iniciei** e **Concluí** gravam a hora; o menu **…** tem Bloquear (pede o motivo), Editar e Cancelar.

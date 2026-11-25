@@ -52,6 +52,8 @@ export function traduzirErro(erro) {
     return 'Sem conexão com o servidor. Confira a internet e tente de novo.';
   if (msg.includes('pelo menos um gestor')) return 'O time precisa de pelo menos um gestor ativo.';
   if (msg.includes('só o gestor')) return 'Só o gestor pode fazer essa mudança.';
+  if (codigo === '23505' || msg.includes('duplicate key')) return 'Já existe um cadastro com esse nome.';
+  if (msg.includes('digite um nome com letras')) return 'Digite um nome com letras ou números.';
   if (codigo === '42501' || msg.includes('permission denied') || msg.includes('row-level security'))
     return 'Você não tem permissão para fazer isso.';
   return 'Algo deu errado. Tente de novo em instantes.';

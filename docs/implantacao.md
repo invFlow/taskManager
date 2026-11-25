@@ -71,3 +71,27 @@ update public.pessoas set trocar_senha = true where email = 'pessoa@andreani.com
 ```
 
 A pessoa entra com a senha temporária e o InvFlow pede para criar uma nova.
+
+## Etapa 3: tipos de atividade e clientes
+
+Leva 2 minutos. Precisa da etapa 2 feita.
+
+### 1. Criar as tabelas (migração)
+
+1. Supabase > **SQL Editor** > **New query**.
+2. Abra o arquivo `supabase/migrations/002_catalogos.sql` do repositório, copie tudo e cole.
+3. Clique **Run**. Deve aparecer "Success. No rows returned".
+
+Isso cria as tabelas de tipos e clientes, com os 7 tipos iniciais (Inventários diários, Inventários programados, Auditorias, EMB-23, Inventários geográficos, Posições vazias, Validação das sobras). Pode rodar de novo sem duplicar nada.
+
+### 2. Conferir as regras (opcional, recomendado)
+
+1. Supabase > **SQL Editor** > **New query**.
+2. Cole o conteúdo de `supabase/tests/catalogos.sql` e clique **Run**.
+3. Deve aparecer `OK: todos os testes de catálogos passaram`. Se aparecer um erro que começa com `FALHOU:`, me mande o texto.
+
+Como o de pessoas, este teste desfaz tudo no fim.
+
+### 3. Usar
+
+No InvFlow, **Cadastros** > **Tipos** ou **Clientes**. Digite no campo "Procurar ou criar": se o nome já existe ele aparece na lista (sem diferenciar acento nem maiúscula); se não existe, a última opção é **Criar "nome"**. Na lista, **Renomear** corrige um nome e **Arquivar** tira o item das listas sem apagar.

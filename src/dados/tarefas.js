@@ -24,6 +24,34 @@ export async function listarMinhasTarefas(idPessoa, desde) {
   return data;
 }
 
+/**
+ * Todas as tarefas do time para a tela Equipe: as abertas e as concluídas a
+ * partir de "desde" (início de hoje, para o filtro "Concluídas hoje").
+ */
+export async function listarTarefasEquipe(desde) {
+  const { data, error } = await supabase
+    .from('tarefas_lista')
+    .select(CAMPOS)
+    .or(`status.in.(a_fazer,em_andamento,bloqueada),and(status.eq.concluida,concluida_em.gte."${new Date(desde).toISOString()}")`)
+    .order('prazo')
+    .limit(2000);
+  if (error) throw error;
+  return data;
+}
+
+/** Histórico da tarefa (linha do tempo), do mais antigo para o mais novo. */
+export async function listarEventos(idTarefa) {
+  const { data, error } = await supabase
+    .from('tarefa_eventos')
+    .select('id, tarefa_id, pessoa_id, evento, detalhe, em')
+    .eq('tarefa_id', idTarefa)
+    .order('em')
+    .order('id')
+    .limit(500);
+  if (error) throw error;
+  return data;
+}
+
 /** Uma tarefa com os nomes (tipo, cliente, responsáveis). */
 export async function obterTarefa(id) {
   const { data, error } = await supabase.from('tarefas_lista').select(CAMPOS).eq('id', id).maybeSingle();

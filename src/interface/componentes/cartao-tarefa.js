@@ -12,6 +12,7 @@ import { iniciais, traduzirErro } from '../../logica/conta.js';
 
 /**
  * opcoes: { perfil, agora, compacto, aoEditar(tarefa) }
+ * O título abre o detalhe (#/tarefa/id).
  * Depois de cada mudança, avisa as telas (evento "invflow:tarefas").
  */
 export function cartaoTarefa(tarefa, { perfil, agora = new Date(), compacto = false, aoEditar } = {}) {
@@ -55,7 +56,9 @@ export function cartaoTarefa(tarefa, { perfil, agora = new Date(), compacto = fa
     'data-id': String(tarefa.id),
   },
     el('div', { class: 'cartao-tarefa-texto' },
-      el('h3', { class: 'cartao-tarefa-titulo' }, tituloDaTarefa(tarefa), ...selos),
+      el('h3', { class: 'cartao-tarefa-titulo' },
+        el('a', { class: 'link-tarefa', href: `#/tarefa/${tarefa.id}`, title: 'Ver detalhes e histórico' }, tituloDaTarefa(tarefa)),
+        ...selos),
       el('p', { class: 'cartao-tarefa-info' }, ...entremear(linhaInfo), avatares),
       tarefa.status === 'bloqueada' && tarefa.motivo_bloqueio
         ? el('p', { class: 'cartao-tarefa-motivo' }, `Motivo: ${tarefa.motivo_bloqueio}`) : null,

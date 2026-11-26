@@ -119,3 +119,26 @@ O teste desfaz tudo no fim: nenhuma tarefa de teste fica no banco.
 ### 3. Usar
 
 No InvFlow, **+ Nova**: escolha Tipo e Cliente (digitando; se não existir, a última opção cria) e clique **Criar**. O prazo já vem hoje 17h30 e o responsável é você. Em **Minhas tarefas**, **Iniciei** e **Concluí** gravam a hora; o menu **…** tem Bloquear (pede o motivo), Editar e Cancelar.
+
+## Etapa 5: equipe, detalhe e juntar duplicados
+
+Leva 1 minuto. Precisa da etapa 4 feita.
+
+### 1. Criar a função de juntar duplicados (migração)
+
+1. Supabase > **SQL Editor** > **New query**.
+2. Abra o arquivo `supabase/migrations/004_juntar_duplicados.sql` do repositório, copie tudo e cole.
+3. Clique **Run**. Deve aparecer "Success. No rows returned".
+
+Sem essa migração, Equipe e o detalhe da tarefa funcionam normalmente; só o botão **Juntar...** em Cadastros dá erro.
+
+### 2. Conferir (opcional)
+
+Cole `supabase/tests/juntar.sql` no SQL Editor e clique **Run**. Deve aparecer `OK: todos os testes de juntar duplicados passaram`. O teste desfaz tudo no fim.
+
+### 3. Usar
+
+- **Equipe**: todas as tarefas abertas, por pessoa. Filtre por pessoa, tipo, cliente, status ou **Só atrasadas**, ou busque. Os filtros ficam no endereço: dá para salvar como favorito.
+- **Detalhe**: clique no título de uma tarefa. Mostra a duração (com o tempo bloqueado) e a linha do tempo.
+- **Gestor**: em Equipe, **+ Tarefa para Ana** cria a tarefa já direcionada.
+- **Juntar duplicados**: Cadastros > Clientes (ou Tipos) > **Juntar...** no nome errado, escolha o certo e confirme.

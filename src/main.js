@@ -1,5 +1,5 @@
 // Ponto de entrada do InvFlow: login, perfil e navegação.
-// Próximas etapas: equipe e detalhe (etapa 5), tempo real (etapa 6).
+// Próxima etapa: tempo real e sino (etapa 6).
 
 import { iniciarRoteador } from './roteador.js';
 import { telaEmBreve, telaNaoEncontrada } from './interface/telas/em-breve.js';
@@ -8,6 +8,8 @@ import { telaNovaSenha } from './interface/telas/nova-senha.js';
 import { telaPerfil } from './interface/telas/perfil.js';
 import { telaCadastros } from './interface/telas/cadastros.js';
 import { telaMinhas } from './interface/telas/minhas.js';
+import { telaEquipe } from './interface/telas/equipe.js';
+import { telaTarefaDetalhe } from './interface/telas/tarefa-detalhe.js';
 import { abrirNovaTarefa } from './interface/telas/nova-tarefa.js';
 import { telaAvisoConta, telaSemAcesso } from './interface/telas/aviso-conta.js';
 import { mostrarAviso } from './interface/componentes/aviso-toast.js';
@@ -17,11 +19,12 @@ import { iniciais } from './logica/conta.js';
 
 const ROTAS = [
   { nome: 'minhas', titulo: 'Minhas tarefas', tela: (alvo) => telaMinhas(alvo, contexto) },
-  { nome: 'equipe', titulo: 'Equipe', tela: telaEmBreve({ titulo: 'Equipe', descricao: 'Todas as tarefas abertas do time, com filtros.', etapa: 5 }) },
+  { nome: 'equipe', titulo: 'Equipe', tela: (alvo, parametros, consulta) => telaEquipe(alvo, contexto, consulta) },
   { nome: 'painel', titulo: 'Painel', tela: telaEmBreve({ titulo: 'Painel do gestor', descricao: 'O que pede atenção hoje e como o time está andando.', etapa: 10 }) },
   { nome: 'emb', titulo: 'EMB-23', tela: telaEmBreve({ titulo: 'EMB-23', descricao: 'Lista, criação, impressão e baixa dos EMBs.', etapa: 13 }) },
   { nome: 'cadastros', titulo: 'Cadastros', tela: (alvo, parametros) => telaCadastros(alvo, contexto, parametros) },
-  { nome: 'perfil', titulo: 'Perfil', tela: (alvo) => telaPerfil(alvo, contexto) },
+  { nome: 'perfil', titulo: 'Perfil', tela: (alvo) => telaPerfil(alvo, contexto), foraDoMenu: true },
+  { nome: 'tarefa', titulo: 'Tarefa', tela: (alvo, parametros) => telaTarefaDetalhe(alvo, contexto, parametros), foraDoMenu: true },
 ];
 
 const conteudo = document.getElementById('conteudo');
@@ -33,8 +36,15 @@ let sessao = null;
 let recuperandoSenha = chegouPeloLinkDeNovaSenha;
 let estadoAtual = null;
 let pararRoteador = null;
+// Endereço de antes da última troca (com os filtros da Equipe, que mudam sem
+// "hashchange"). Registrado antes do roteador, então já vale quando a tela abre.
+let rotaAnterior = null;
+window.addEventListener('hashchange', (ev) => {
+  try { rotaAnterior = new URL(ev.oldURL).hash || null; } catch { rotaAnterior = null; }
+});
 const contexto = {
   perfil: null,
+  voltarPara: null, // de onde veio quem abriu o detalhe (#/equipe?..., #/minhas)
   aoAtualizarPerfil(novo) {
     Object.assign(contexto.perfil, novo);
     montarTopo();
@@ -49,7 +59,7 @@ function rotaAtual() {
 function montarTopo() {
   const perfil = contexto.perfil;
   menu.replaceChildren(
-    ...rotasVisiveis(ROTAS, perfil).filter((r) => r.nome !== 'perfil').map((r) => {
+    ...rotasVisiveis(ROTAS, perfil).filter((r) => !r.foraDoMenu).map((r) => {
       const a = document.createElement('a');
       a.href = '#/' + r.nome;
       a.textContent = r.titulo;
@@ -69,8 +79,9 @@ function marcarAtivo(nome) {
   }
 }
 
-function mostrarRota({ rota, parametros }) {
+function mostrarRota({ rota, parametros, consulta }) {
   if (estadoAtual !== 'app') return;
+  if (rota?.nome === 'tarefa' && rotaAnterior && !rotaAnterior.startsWith('#/tarefa')) contexto.voltarPara = rotaAnterior;
   if (!rota) {
     telaNaoEncontrada(conteudo);
     document.title = 'Página não encontrada · InvFlow';
@@ -80,9 +91,10 @@ function mostrarRota({ rota, parametros }) {
     document.title = 'Sem acesso · InvFlow';
     marcarAtivo(null);
   } else {
-    rota.tela(conteudo, parametros);
     document.title = `${rota.titulo} · InvFlow`;
-    marcarAtivo(rota.nome);
+    rota.tela(conteudo, parametros, consulta);
+    // O detalhe da tarefa marca no menu a tela de onde veio.
+    marcarAtivo(rota.nome === 'tarefa' ? (contexto.voltarPara ?? '#/equipe').replace(/^#\/?/, '').split(/[/?]/)[0] : rota.nome);
   }
   conteudo.focus({ preventScroll: true });
   window.scrollTo(0, 0);

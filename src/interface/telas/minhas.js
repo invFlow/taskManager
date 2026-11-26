@@ -1,7 +1,6 @@
 // Minhas tarefas (tela inicial): Agora, Hoje, Próximos dias, Mais adiante e
-// Concluídas hoje (recolhido). Recarrega quando alguma tarefa muda, quando a
-// janela volta a ficar visível e a cada 5 minutos; redesenha a cada minuto
-// para o selo "Atrasada" aparecer na hora certa.
+// Concluídas hoje (recolhido). Fica em dia com vigiarTarefas (recarrega quando
+// algo muda e redesenha a cada minuto para o selo "Atrasada").
 import { el } from '../componentes/el.js';
 import { cartaoTarefa } from '../componentes/cartao-tarefa.js';
 import { listarMinhasTarefas } from '../../dados/tarefas.js';
@@ -9,6 +8,7 @@ import { agruparMinhas, resumoMinhas } from '../../logica/tarefas.js';
 import { inicioDoDia } from '../../logica/datas.js';
 import { traduzirErro } from '../../logica/conta.js';
 import { abrirNovaTarefa } from './nova-tarefa.js';
+import { vigiarTarefas } from '../componentes/vigia-tarefas.js';
 
 /** contexto: { perfil } */
 export function telaMinhas(alvo, contexto) {
@@ -95,22 +95,6 @@ export function telaMinhas(alvo, contexto) {
     corpo.replaceChildren(...blocos);
   }
 
-  // --- Atualizações
-  const aoMudar = () => { if (!raiz.isConnected) return parar(); carregar(); };
-  const aoVoltar = () => { if (document.visibilityState === 'visible') aoMudar(); };
-  window.addEventListener('invflow:tarefas', aoMudar);
-  document.addEventListener('visibilitychange', aoVoltar);
-  const relogio = setInterval(() => {
-    if (!raiz.isConnected) return parar();
-    if (!document.querySelector('details.menu-mais[open], dialog[open]')) desenhar();
-  }, 60_000);
-  const recarga = setInterval(() => { if (!raiz.isConnected) return parar(); if (document.visibilityState === 'visible') carregar(); }, 5 * 60_000);
-  function parar() {
-    window.removeEventListener('invflow:tarefas', aoMudar);
-    document.removeEventListener('visibilitychange', aoVoltar);
-    clearInterval(relogio);
-    clearInterval(recarga);
-  }
-
+  vigiarTarefas(raiz, { carregar, desenhar });
   carregar();
 }

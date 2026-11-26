@@ -51,7 +51,7 @@ jobs:
       id-token: write
     environment:
       name: github-pages
-      url: ${{ steps.deploy.outputs.page_url }}
+      url: ${{ steps.deploy.outputs.page_url || steps.deploy2.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
       - name: Montar a pasta do site (só o que o navegador precisa)
@@ -60,9 +60,19 @@ jobs:
           cp index.html _site/
           cp -r src _site/
           touch _site/.nojekyll
+          scripts/carimbar-versao.sh _site "${GITHUB_SHA::7}"
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site
+      # Às vezes o GitHub ainda não "enxerga" o pacote recém-enviado e a
+      # publicação falha com "No artifacts named github-pages". Espera e tenta de novo.
       - id: deploy
+        uses: actions/deploy-pages@v4
+        continue-on-error: true
+      - name: Esperar antes de tentar de novo
+        if: steps.deploy.outcome == 'failure'
+        run: sleep 30
+      - id: deploy2
+        if: steps.deploy.outcome == 'failure'
         uses: actions/deploy-pages@v4

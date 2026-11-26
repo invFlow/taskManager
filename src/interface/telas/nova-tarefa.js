@@ -16,15 +16,17 @@ let pessoasCache = null;
 
 /**
  * Abre a janela. perfil: quem está usando. tarefa: linha de tarefas_lista para editar (opcional).
+ * responsaveis: ids já escolhidos numa tarefa nova (ex.: "+ Tarefa para Ana" na Equipe).
  * Devolve uma Promise com a tarefa salva (ou null se fechou sem salvar).
  */
-export function abrirNovaTarefa({ perfil, tarefa = null }) {
+export function abrirNovaTarefa({ perfil, tarefa = null, responsaveis: responsaveisIniciais = null }) {
   return new Promise((resolver) => {
     const editando = Boolean(tarefa);
     const gestor = perfil.papel === 'gestor';
     let origem = tarefa?.origem ?? 'demanda';
     let salva = null;
-    let responsaveis = new Set(tarefa?.responsaveis_ids ?? [perfil.id]);
+    const gestorOuSi = (ids) => (gestor ? ids : [...new Set([perfil.id, ...ids])]);
+    let responsaveis = new Set(tarefa?.responsaveis_ids ?? (responsaveisIniciais?.length ? gestorOuSi(responsaveisIniciais) : [perfil.id]));
     let pessoas = pessoasCache ?? (tarefa?.responsaveis ?? []).concat([{ id: perfil.id, nome: perfil.nome }]);
 
     // --- Demanda / Programada
@@ -91,7 +93,7 @@ export function abrirNovaTarefa({ perfil, tarefa = null }) {
     const resumoResp = el('span', { class: 'resp-resumo' });
     const mostrarPessoas = el('button', { class: 'link', type: 'button' }, gestor ? 'escolher pessoas' : 'incluir colegas');
     const chips = el('div', { class: 'chips', role: 'group', 'aria-label': 'Responsáveis', hidden: true });
-    let chipsAbertos = editando && (responsaveis.size > 1 || !responsaveis.has(perfil.id));
+    let chipsAbertos = (editando || Boolean(responsaveisIniciais?.length)) && (responsaveis.size > 1 || !responsaveis.has(perfil.id));
     mostrarPessoas.addEventListener('click', async () => { chipsAbertos = true; await carregarPessoas(); desenharResp(); chips.querySelector('button')?.focus(); });
     const blocoResp = el('div', { class: 'bloco-resp' },
       el('p', { class: 'prazo-linha' }, el('span', { class: 'rotulo' }, 'Responsáveis: '), resumoResp, ' ', mostrarPessoas),
@@ -237,7 +239,7 @@ export function abrirNovaTarefa({ perfil, tarefa = null }) {
 
     trocarOrigem(origem);
     desenharResp();
-    if (editando || pessoasCache == null) carregarPessoas().then(desenharResp);
+    if (editando || pessoasCache == null || chipsAbertos) carregarPessoas().then(desenharResp);
     (editando ? botaoCriar : tipo.input).focus();
   });
 }

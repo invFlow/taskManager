@@ -2,29 +2,30 @@
 // As funções lerRota e resolverRota são puras (sem DOM) e têm testes.
 
 /**
- * Converte o hash da URL em { caminho, partes }.
- * Ex.: "#/tarefa/123?x=1" -> { caminho: "/tarefa/123", partes: ["tarefa", "123"] }
+ * Converte o hash da URL em { caminho, partes, consulta }.
+ * Ex.: "#/tarefa/123?x=1" -> { caminho: "/tarefa/123", partes: ["tarefa", "123"], consulta: { x: "1" } }
  */
 export function lerRota(hash) {
-  let texto = String(hash ?? '').replace(/^#/, '');
-  texto = texto.split('?')[0];
-  const partes = texto.split('/').filter(Boolean).map(decodeURIComponent);
-  return { caminho: '/' + partes.join('/'), partes };
+  const texto = String(hash ?? '').replace(/^#/, '');
+  const [caminhoTexto, consultaTexto = ''] = texto.split('?');
+  const partes = caminhoTexto.split('/').filter(Boolean).map(decodeURIComponent);
+  const consulta = Object.fromEntries(new URLSearchParams(consultaTexto));
+  return { caminho: '/' + partes.join('/'), partes, consulta };
 }
 
 /**
  * Procura a rota pelo primeiro segmento do caminho.
  * rotas: [{ nome, titulo, tela }]; padrao: nome da rota usada quando o hash está vazio.
- * Devolve { rota, parametros, redirecionar } ou { rota: null } quando não existe.
+ * Devolve { rota, parametros, consulta, redirecionar } (rota null quando não existe).
  */
 export function resolverRota(hash, rotas, padrao) {
-  const { partes } = lerRota(hash);
+  const { partes, consulta } = lerRota(hash);
   if (partes.length === 0) {
     const rota = rotas.find((r) => r.nome === padrao) ?? null;
-    return { rota, parametros: [], redirecionar: rota ? '#/' + rota.nome : null };
+    return { rota, parametros: [], consulta, redirecionar: rota ? '#/' + rota.nome : null };
   }
   const rota = rotas.find((r) => r.nome === partes[0]) ?? null;
-  return { rota, parametros: partes.slice(1), redirecionar: null };
+  return { rota, parametros: partes.slice(1), consulta, redirecionar: null };
 }
 
 /**

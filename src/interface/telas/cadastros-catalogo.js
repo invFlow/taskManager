@@ -1,9 +1,11 @@
 // Aba Tipos ou Clientes da tela Cadastros (só gestor abre).
-// Procurar ou criar pela "busca com criar"; renomear, arquivar e reativar na lista.
+// Procurar ou criar pela "busca com criar"; renomear, juntar duplicados,
+// arquivar e reativar na lista.
 import { el, ocupado } from '../componentes/el.js';
 import { mostrarAviso } from '../componentes/aviso-toast.js';
 import { buscaComCriar } from '../componentes/busca-com-criar.js';
-import { listarCatalogo, criarNoCatalogo, atualizarNoCatalogo } from '../../dados/catalogos.js';
+import { listarCatalogo, criarNoCatalogo, atualizarNoCatalogo, juntarNoCatalogo } from '../../dados/catalogos.js';
+import { abrirModal } from '../componentes/modal.js';
 import { filtrarCatalogo, limparNomeCatalogo, ordenarPorNome, CATALOGOS, NOME_MAXIMO } from '../../logica/catalogos.js';
 import { traduzirErro } from '../../logica/conta.js';
 
@@ -46,7 +48,7 @@ export function abaCatalogo(alvo, catalogo) {
         el('label', { class: 'opcao', for: arquivados.id }, arquivados, el('span', {}, 'Mostrar arquivados')),
       ),
       el('p', { class: 'texto-suave' },
-        `Qualquer pessoa do time pode criar ${info.singular} na hora, ao preencher uma tarefa. Aqui você corrige nomes e arquiva o que não se usa mais. Arquivar não apaga: as tarefas antigas continuam com o nome.`),
+        `Qualquer pessoa do time pode criar ${info.singular} na hora, ao preencher uma tarefa. Aqui você corrige nomes, junta duplicados (as tarefas passam para o nome certo) e arquiva o que não se usa mais. Arquivar não apaga: as tarefas antigas continuam com o nome.`),
       el('div', { class: 'busca-catalogo' }, busca.elemento),
       contagem,
       lista,
@@ -92,14 +94,16 @@ export function abaCatalogo(alvo, catalogo) {
     const nome = el('strong', { class: 'item-nome' }, item.nome);
     const selo = item.ativo ? null : el('span', { class: 'selo selo-pequeno selo-arquivado' }, 'arquivado');
     const renomear = el('button', { class: 'botao botao-pequeno', type: 'button' }, 'Renomear');
+    const juntar = item.ativo ? el('button', { class: 'botao botao-pequeno', type: 'button', title: `Passar as tarefas de “${item.nome}” para outro ${info.singular} e arquivar este` }, 'Juntar...') : null;
     const arquivar = el('button', { class: 'botao botao-pequeno' + (item.ativo ? ' botao-perigo' : ''), type: 'button' },
       item.ativo ? 'Arquivar' : 'Reativar');
     const linhaEl = el('article', { class: 'item-catalogo' + (item.ativo ? '' : ' inativo'), 'data-id': String(item.id) },
       el('div', { class: 'item-texto' }, nome, selo),
-      el('div', { class: 'item-acoes' }, renomear, arquivar),
+      el('div', { class: 'item-acoes' }, renomear, juntar, arquivar),
     );
 
     renomear.addEventListener('click', () => editarNome(linhaEl, item));
+    juntar?.addEventListener('click', () => abrirJuntar(item));
     arquivar.addEventListener('click', async () => {
       ocupado(arquivar, true, item.ativo ? 'Arquivando...' : 'Reativando...');
       try {
@@ -114,6 +118,61 @@ export function abaCatalogo(alvo, catalogo) {
       }
     });
     return linhaEl;
+  }
+
+  /** "Juntar Abbot em ABBOTT": escolhe o item que fica, confirma e chama o banco. */
+  function abrirJuntar(item) {
+    const outros = ordenarPorNome(itens.filter((i) => i.ativo && i.id !== item.id));
+    if (!outros.length) { mostrarAviso(`Não há outro ${info.singular} ativo para juntar.`, { tipo: 'erro' }); return; }
+    const idSelect = `juntar-${catalogo}-${item.id}`;
+    const select = el('select', { id: idSelect },
+      el('option', { value: '' }, 'Escolha...'),
+      ...outros.map((o) => el('option', { value: String(o.id) }, o.nome)));
+    // Sugere o mais parecido (mesmo nome sem espaços, ou que começa igual).
+    const chave = (n) => (n.nome_busca ?? '').replace(/ /g, '');
+    const parecido = outros.find((o) => chave(o) === chave(item)) ?? outros.find((o) => chave(o).startsWith(chave(item).slice(0, 4)) && chave(item).length >= 4);
+    if (parecido) select.value = String(parecido.id);
+    const explicacao = el('p', { class: 'texto-suave sem-margem' });
+    const erro = el('p', { class: 'erro', role: 'alert', hidden: true });
+    const ok = el('button', { class: 'botao botao-primario', type: 'submit' }, 'Juntar');
+    const voltar = el('button', { class: 'botao', type: 'button' }, 'Voltar');
+    const form = el('form', { class: 'formulario', novalidate: true },
+      el('p', { class: 'sem-margem' }, `Juntar “${item.nome}” em:`),
+      el('div', { class: 'campo' }, el('label', { for: idSelect }, `${primeiraMaiuscula(info.singular)} que fica`), select),
+      explicacao, erro,
+      el('div', { class: 'linha-botoes modal-botoes' }, ok, voltar),
+    );
+    const atualizarTexto = () => {
+      const alvoItem = outros.find((o) => String(o.id) === select.value);
+      explicacao.textContent = alvoItem
+        ? `Todas as tarefas de “${item.nome}” (abertas e antigas) passam para “${alvoItem.nome}”, e “${item.nome}” fica arquivado. Fica registrado no histórico de cada tarefa.`
+        : `Escolha o ${info.singular} com o nome certo.`;
+      ok.disabled = !alvoItem;
+    };
+    select.addEventListener('change', atualizarTexto);
+    atualizarTexto();
+
+    const m = abrirModal({ titulo: 'Juntar duplicados', conteudo: form, larguraPequena: true });
+    voltar.addEventListener('click', () => m.fechar());
+    form.addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+      const alvoItem = outros.find((o) => String(o.id) === select.value);
+      if (!alvoItem) return;
+      ocupado(ok, true, 'Juntando...');
+      try {
+        const n = await juntarNoCatalogo(catalogo, item.id, alvoItem.id);
+        item.ativo = false;
+        m.fechar();
+        mostrarAviso(`“${item.nome}” juntado em “${alvoItem.nome}”. ${n === 1 ? '1 tarefa mudou' : `${n} tarefas mudaram`}.`, { duracao: 5000 });
+        busca.usarItens(itens);
+        desenhar(alvoItem.id);
+      } catch (e) {
+        ocupado(ok, false);
+        erro.textContent = traduzirErro(e);
+        erro.hidden = false;
+      }
+    });
+    select.focus();
   }
 
   function editarNome(linhaEl, item) {

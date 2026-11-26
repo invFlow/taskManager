@@ -39,7 +39,7 @@ node --test
 
 Os testes ficam em `tests/` e cobrem só código puro (sem tela e sem banco).
 
-As regras do banco têm testes em `supabase/tests/rls.sql` (pessoas), `supabase/tests/catalogos.sql` (tipos e clientes) e `supabase/tests/tarefas.sql` (tarefas). Para rodar num Postgres local vazio:
+As regras do banco têm testes em `supabase/tests/rls.sql` (pessoas), `supabase/tests/catalogos.sql` (tipos e clientes), `supabase/tests/tarefas.sql` (tarefas) e `supabase/tests/juntar.sql` (juntar duplicados). Para rodar num Postgres local vazio:
 
 ```
 DATABASE_URL=postgres://usuario:senha@localhost:5432/banco_de_teste supabase/tests/rodar-local.sh

@@ -58,3 +58,18 @@ Registro curto das decisões tomadas durante a construção. O plano completo es
 - Sem tempo real ainda (etapa 6): a tela recarrega depois de cada ação, quando a janela volta a ficar visível e a cada 5 minutos; o selo "Atrasada" é recalculado a cada minuto.
 - `traduzirErro` passa adiante as mensagens das funções de tarefa (código P0001, já em português).
 - Não entrou nesta etapa: "Gerar e-mail" no menu do cartão (etapa 12), tela de detalhe/linha do tempo e Equipe (etapa 5). "Juntar duplicados" de tipo/cliente fica para a etapa 5, junto da tela Equipe.
+
+## Etapa 5, 26/11/2026
+
+- **Equipe** (`telas/equipe.js`) abre para todos (o time já lê todas as tarefas); o gestor é quem mais usa. Mostra as abertas, agrupadas por pessoa (padrão) ou numa lista por prazo. Tarefa com dois responsáveis aparece com cada um.
+- Filtros: busca, pessoa, tipo, cliente, status e "Só atrasadas". O status tem também **Concluídas hoje**. A busca não diferencia acento nem maiúscula e procura no título, observações, motivo do bloqueio, assunto do e-mail e nomes dos responsáveis; cada palavra precisa aparecer.
+- **Os filtros ficam no endereço** (`#/equipe?atrasadas=1&pessoa=...`), gravados com `history.replaceState` (não recarrega a tela). Assim o painel do gestor (etapa 10) abre a lista certa só com um link, e dá para guardar um favorito. O roteador agora entrega a `consulta` às telas.
+- Ordem dentro de cada pessoa: em andamento, atrasadas, depois por prazo; concluídas no fim.
+- Sem filtros, aparece no fim **"Sem tarefa aberta agora: ..."** (quem está livre). Para o gestor, cada pessoa tem **+ Tarefa para Ana**, que abre a Nova tarefa já com ela de responsável (`abrirNovaTarefa({ responsaveis })`). O botão "+ Nova" continua igual.
+- **Detalhe** (`#/tarefa/123`, `telas/tarefa-detalhe.js`): o título de qualquer cartão abre. Dados, responsáveis, botões de status (os mesmos do cartão, sem o menu "…"), **Duração** e **Linha do tempo**. "Voltar" leva para a tela de onde veio, com os filtros.
+- **Duração** = do primeiro "Iniciei" até o "Concluí". Mostra quanto disso ficou bloqueada (soma dos trechos entre "bloqueada" e "desbloqueada", calculada pelos eventos). Em andamento mostra "Em andamento há 45 min". Reabrir mantém o início original.
+- Linha do tempo do mais antigo para o mais novo, com quem fez e quando ("Iniciada por Ana · hoje 09h12"); edição mostra cada campo "de → para" com os nomes de tipo e cliente. Textos em `logica/linha-do-tempo.js`, com testes.
+- As três telas de tarefas usam `componentes/vigia-tarefas.js` para ficar em dia (recarrega quando algo muda, ao voltar para a janela e a cada 5 min) até o tempo real da etapa 6.
+- **Juntar duplicados** (pendente desde a etapa 3) entrou em Cadastros > Tipos/Clientes: botão "Juntar..." escolhe o item que fica; todas as tarefas (abertas e antigas) passam para ele e o duplicado é arquivado. Só gestor, pela função `juntar_no_catalogo` (migração `004_juntar_duplicados.sql`). Cada tarefa mudada ganha um evento "editada" no histórico. Quando o EMB-23 (etapa 13) usar clientes, a função muda os EMBs também.
+- Por causa dessa migração, as migrações previstas no plano a partir da etapa 6 sobem um número (avisos vira `005_avisos.sql`, e assim por diante).
+- "Gerar e-mail" no detalhe continua para a etapa 12.

@@ -41,3 +41,14 @@ export async function atualizarNoCatalogo(catalogo, id, campos) {
   }
   return data[0];
 }
+
+/**
+ * Só o gestor: passa as tarefas do item "de" (duplicado) para o item "para"
+ * e arquiva o duplicado. Devolve quantas tarefas mudaram.
+ */
+export async function juntarNoCatalogo(catalogo, de, para) {
+  tabela(catalogo);
+  const { data, error } = await supabase.rpc('juntar_no_catalogo', { p_catalogo: catalogo, p_de: de, p_para: para });
+  if (error) throw error;
+  return data;
+}

@@ -5,10 +5,16 @@ import { lerRota, resolverRota } from '../src/roteador.js';
 const ROTAS = [{ nome: 'minhas' }, { nome: 'equipe' }, { nome: 'tarefa' }];
 
 test('lerRota separa o caminho em partes', () => {
-  assert.deepEqual(lerRota('#/tarefa/123'), { caminho: '/tarefa/123', partes: ['tarefa', '123'] });
-  assert.deepEqual(lerRota(''), { caminho: '/', partes: [] });
-  assert.deepEqual(lerRota('#/equipe?filtro=x'), { caminho: '/equipe', partes: ['equipe'] });
-  assert.deepEqual(lerRota('#/emb/E%2000123'), { caminho: '/emb/E 00123', partes: ['emb', 'E 00123'] });
+  assert.deepEqual(lerRota('#/tarefa/123'), { caminho: '/tarefa/123', partes: ['tarefa', '123'], consulta: {} });
+  assert.deepEqual(lerRota(''), { caminho: '/', partes: [], consulta: {} });
+  assert.deepEqual(lerRota('#/equipe?filtro=x'), { caminho: '/equipe', partes: ['equipe'], consulta: { filtro: 'x' } });
+  assert.deepEqual(lerRota('#/emb/E%2000123'), { caminho: '/emb/E 00123', partes: ['emb', 'E 00123'], consulta: {} });
+});
+
+test('lerRota lê os filtros depois do "?"', () => {
+  const { consulta } = lerRota('#/equipe?atrasadas=1&busca=rua%20f05&pessoa=abc');
+  assert.deepEqual(consulta, { atrasadas: '1', busca: 'rua f05', pessoa: 'abc' });
+  assert.deepEqual(resolverRota('#/equipe?atrasadas=1', ROTAS, 'minhas').consulta, { atrasadas: '1' });
 });
 
 test('hash vazio redireciona para a rota padrão', () => {
